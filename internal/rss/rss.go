@@ -116,11 +116,11 @@ func (p *NewsParser) convertDataModel(items []Item) ([]*database.Post, error) {
 		post.Link = item.Link
 
 		dateLayout := "Mon, 2 Jan 2006 15:04:05 MST"
-		time, err := time.Parse(dateLayout, item.PubTime)
+		pubTime, err := time.Parse(dateLayout, item.PubTime)
 		if err != nil {
 			return nil, err
 		}
-		post.PubTime = time.Unix()
+		post.PubTime = pubTime.Unix()
 
 		posts = append(posts, &post)
 	}
