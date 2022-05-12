@@ -61,8 +61,8 @@ func (p *NewsParser) readAllRSS() []*database.Post {
 		case err := <-p.errorChan:
 			log.WithError(err).Error("failed to read rss")
 
-		case i := <-p.postChan:
-			posts = append(posts, i...)
+		case post := <-p.postChan:
+			posts = append(posts, post...)
 		}
 
 		rssCount--
