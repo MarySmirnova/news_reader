@@ -1,0 +1,9 @@
+CREATE SCHEMA IF NOT EXISTS news;
+
+CREATE TABLE IF NOT EXISTS news.posts (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    pubTime BIGINT NOT NULL CHECK (pubTime > 0),
+    link TEXT NOT NULL UNIQUE
+);
