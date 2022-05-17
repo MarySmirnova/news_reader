@@ -82,14 +82,14 @@ func (s *Store) GetLastNews(n int) ([]*Post, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var post *Post
+		var post Post
 
 		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.PubTime, &post.Link)
 		if err != nil {
 			return nil, err
 		}
 
-		posts = append(posts, post)
+		posts = append(posts, &post)
 	}
 
 	if err = rows.Err(); err != nil {
