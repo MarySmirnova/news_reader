@@ -22,6 +22,7 @@ type API struct {
 	httpServer *http.Server
 }
 
+//New creates a new instance API.
 func New(cfg config.API, db storage) *API {
 	a := &API{
 		db: db,
@@ -29,6 +30,7 @@ func New(cfg config.API, db storage) *API {
 
 	handler := mux.NewRouter()
 	handler.Name("get_some_last_news").Path("/news/{n}").Methods(http.MethodGet).HandlerFunc(a.PostsHandler)
+	handler.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./webapp"))))
 
 	a.httpServer = &http.Server{
 		Addr:         cfg.Listen,
@@ -40,10 +42,12 @@ func New(cfg config.API, db storage) *API {
 	return a
 }
 
+//GetHTTPServer returns the http.Server.
 func (a *API) GetHTTPServer() *http.Server {
 	return a.httpServer
 }
 
+//PostsHandler waits for parameter n in the request path, returns the latest n news.
 func (a *API) PostsHandler(w http.ResponseWriter, r *http.Request) {
 	nn := mux.Vars(r)["n"]
 	n, err := strconv.Atoi(nn)
@@ -59,6 +63,7 @@ func (a *API) PostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(news)
 }

@@ -20,9 +20,7 @@ func testPGDB(t *testing.T) (*Store, func()) {
 	err := env.Parse(&cfg)
 	assert.Nil(t, err)
 
-	cfg.Database = "test"
-
-	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.TestDatabase)
 
 	db, err := pgxpool.Connect(ctx, connString)
 	assert.Nil(t, err)

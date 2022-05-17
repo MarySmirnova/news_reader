@@ -16,6 +16,7 @@ type Store struct {
 	db *pgxpool.Pool
 }
 
+//NewPostgresDB creates a new instance Store for PostgresDB.
 func NewPostgresDB(cfg config.Postgres) (*Store, error) {
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
 
@@ -33,10 +34,12 @@ func NewPostgresDB(cfg config.Postgres) (*Store, error) {
 	}, nil
 }
 
+//GetPGXPool returns the pgxpool.Pool.
 func (s *Store) GetPGXPool() *pgxpool.Pool {
 	return s.db
 }
 
+//WriteNews adds posts to the database, checking links for uniqueness.
 func (s *Store) WriteNews(posts []*Post) error {
 	query := `
 	INSERT INTO news.posts (
@@ -63,6 +66,7 @@ func (s *Store) WriteNews(posts []*Post) error {
 	return nil
 }
 
+//GetLastNews returns the latest n news, sorted by publication date.
 func (s *Store) GetLastNews(n int) ([]*Post, error) {
 	query := `
 	SELECT 

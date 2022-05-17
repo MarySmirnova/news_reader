@@ -26,6 +26,7 @@ type NewsParser struct {
 	postChan  chan []*database.Post
 }
 
+//NewNewsParser creates a new instance NewsParser.
 func NewNewsParser(cfg config.RSS, db storage) *NewsParser {
 	return &NewsParser{
 		db:            db,
@@ -36,6 +37,7 @@ func NewNewsParser(cfg config.RSS, db storage) *NewsParser {
 	}
 }
 
+//Start starts a process that every "requestPeriod" minutes polls all links specified in the configuration.
 func (p *NewsParser) Start(ctx context.Context) error {
 	for {
 		posts := p.readAllRSS()
