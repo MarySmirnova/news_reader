@@ -1,8 +1,6 @@
 package config
 
-import "time"
-
 type RSS struct {
-	Links         []string
-	RequestPeriod time.Duration
+	Links         []string `json:"rss"`
+	RequestPeriod int      `json:"request_period"`
 }

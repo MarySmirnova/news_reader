@@ -8,7 +8,6 @@ import (
 	"github.com/MarySmirnova/news_reader/internal/config"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	log "github.com/sirupsen/logrus"
 )
 
 var ctx context.Context = context.Background()
@@ -29,10 +28,13 @@ func NewPostgresDB(cfg config.Postgres) (*Store, error) {
 		return nil, err
 	}
 
-	log.Info("database connection established")
 	return &Store{
 		db: db,
 	}, nil
+}
+
+func (s *Store) GetPGXPool() *pgxpool.Pool {
+	return s.db
 }
 
 func (s *Store) WriteNews(posts []*Post) error {

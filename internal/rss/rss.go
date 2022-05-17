@@ -1,6 +1,7 @@
 package rss
 
 import (
+	"context"
 	"encoding/xml"
 	"io/ioutil"
 	"net/http"
@@ -29,13 +30,13 @@ func NewNewsParser(cfg config.RSS, db storage) *NewsParser {
 	return &NewsParser{
 		db:            db,
 		rssLinks:      cfg.Links,
-		requestPeriod: cfg.RequestPeriod,
+		requestPeriod: time.Duration(cfg.RequestPeriod) * time.Minute,
 		errorChan:     make(chan error),
 		postChan:      make(chan []*database.Post),
 	}
 }
 
-func (p *NewsParser) Run() {
+func (p *NewsParser) Start(ctx context.Context) error {
 	for {
 		posts := p.readAllRSS()
 		err := p.db.WriteNews(posts)
@@ -43,7 +44,11 @@ func (p *NewsParser) Run() {
 			log.WithError(err).Error("fail to write data to database")
 		}
 
-		<-time.After(p.requestPeriod)
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(p.requestPeriod):
+		}
 	}
 }
 

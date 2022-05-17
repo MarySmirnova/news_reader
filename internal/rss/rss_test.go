@@ -2,7 +2,6 @@ package rss
 
 import (
 	"testing"
-	"time"
 
 	"github.com/MarySmirnova/news_reader/internal/config"
 	"github.com/MarySmirnova/news_reader/internal/database"
@@ -15,7 +14,7 @@ func TestNewsParser_readAllRSS(t *testing.T) {
 
 	p := NewNewsParser(config.RSS{
 		Links:         links,
-		RequestPeriod: 3 * time.Second,
+		RequestPeriod: 1,
 	}, db)
 
 	posts := p.readAllRSS()

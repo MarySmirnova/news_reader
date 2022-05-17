@@ -6,20 +6,23 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MarySmirnova/news_reader/internal/config"
+	"github.com/caarlos0/env/v6"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	user     = "mary"
-	password = "efbcnwww"
-	host     = "localhost"
-	port     = 5432
-	database = "test"
-)
+var cfg config.Postgres
 
 func testPGDB(t *testing.T) (*Store, func()) {
-	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", user, password, host, port, database)
+	godotenv.Load("../../.env")
+	err := env.Parse(&cfg)
+	assert.Nil(t, err)
+
+	cfg.Database = "test"
+
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
 
 	db, err := pgxpool.Connect(ctx, connString)
 	assert.Nil(t, err)
