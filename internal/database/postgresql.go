@@ -107,3 +107,90 @@ func (s *Store) GetLastNews(n int) ([]*Post, error) {
 
 	return posts, nil
 }
+
+//NewsAmount returns the number of news by filter.
+func (s *Store) NewsAmount(filter string) (int, error) {
+	query := `
+	SELECT count(*)
+	FROM news.posts
+	WHERE title ILIKE '%$1%';`
+
+	var amount int
+
+	row := s.db.QueryRow(ctx, query, filter)
+	err := row.Scan(&amount)
+	if err != nil {
+		return 0, err
+	}
+
+	return amount, nil
+}
+
+//GetNews returns the specified page with news by filter
+func (s *Store) GetNewsPage(filter string, page int, ipemsPerPage int) ([]*Post, error) {
+	query := `
+	SELECT 
+		id,
+		title,
+		content,
+		pubTime,
+		link
+	FROM news.posts
+	WHERE title ILIKE '%$1%'
+	ORDER BY pubTime DESC
+	LIMIT $2
+	OFFSET $3;`
+
+	offset := (page - 1) * ipemsPerPage
+
+	var posts []*Post
+
+	rows, err := s.db.Query(ctx, query, filter, ipemsPerPage, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post Post
+
+		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.PubTime, &post.Link)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, &post)
+	}
+
+	if err = rows.Err(); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+//GetNewsByID returns one post by its id
+func (s *Store) GetNewsByID(id int) (*Post, error) {
+	query := `
+	SELECT 
+		id,
+		title,
+		content,
+		pubTime,
+		link
+	FROM news.posts
+	WHERE id = $1;`
+
+	var post *Post
+
+	row := s.db.QueryRow(ctx, query, id)
+	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.PubTime, &post.Link)
+	if err != nil {
+		return nil, err
+	}
+
+	return post, nil
+}
