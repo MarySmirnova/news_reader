@@ -101,6 +101,7 @@ func (a *API) logMiddleware(next http.Handler) http.Handler {
 			}).Info("news reader response")
 		}()
 
+		// TODO: записать в ответ ид запроса!
 		next.ServeHTTP(w, r)
 	})
 }
