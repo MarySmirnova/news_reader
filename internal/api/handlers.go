@@ -25,6 +25,7 @@ func (a *API) SomePostsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add("Code", strconv.Itoa(http.StatusOK))
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(news)
 }
@@ -40,11 +41,13 @@ func (a *API) AllPostsHandler(w http.ResponseWriter, r *http.Request) {
 	itemsAmount, err := a.db.NewsAmount(filter)
 	if err != nil {
 		a.writeResponseError(w, err, http.StatusInternalServerError)
+		return
 	}
 
 	posts, err := a.db.GetNewsPage(filter, page, itemsPerPage)
 	if err != nil {
 		a.writeResponseError(w, err, http.StatusInternalServerError)
+		return
 	}
 
 	resp := ResponseNews{
@@ -56,13 +59,18 @@ func (a *API) AllPostsHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
+	w.Header().Add("Code", strconv.Itoa(http.StatusOK))
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
 //PostHandler returns one piece of news by its id.
 func (a *API) PostHandler(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		a.writeResponseError(w, err, http.StatusBadRequest)
+		return
+	}
 
 	post, err := a.db.GetNewsByID(id)
 	if err != nil {
@@ -71,8 +79,10 @@ func (a *API) PostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		a.writeResponseError(w, err, http.StatusInternalServerError)
+		return
 	}
 
+	w.Header().Add("Code", strconv.Itoa(http.StatusOK))
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(post)
 }

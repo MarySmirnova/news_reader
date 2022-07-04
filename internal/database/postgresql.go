@@ -113,11 +113,11 @@ func (s *Store) NewsAmount(filter string) (int, error) {
 	query := `
 	SELECT count(*)
 	FROM news.posts
-	WHERE title ILIKE '%$1%';`
+	WHERE title ILIKE '%` + filter + `%';`
 
 	var amount int
 
-	row := s.db.QueryRow(ctx, query, filter)
+	row := s.db.QueryRow(ctx, query)
 	err := row.Scan(&amount)
 	if err != nil {
 		return 0, err
@@ -136,16 +136,16 @@ func (s *Store) GetNewsPage(filter string, page int, ipemsPerPage int) ([]*Post,
 		pubTime,
 		link
 	FROM news.posts
-	WHERE title ILIKE '%$1%'
+	WHERE title ILIKE '%` + filter + `%'
 	ORDER BY pubTime DESC
-	LIMIT $2
-	OFFSET $3;`
+	LIMIT $1
+	OFFSET $2;`
 
 	offset := (page - 1) * ipemsPerPage
 
 	var posts []*Post
 
-	rows, err := s.db.Query(ctx, query, filter, ipemsPerPage, offset)
+	rows, err := s.db.Query(ctx, query, ipemsPerPage, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func (s *Store) GetNewsByID(id int) (*Post, error) {
 	FROM news.posts
 	WHERE id = $1;`
 
-	var post *Post
+	var post Post
 
 	row := s.db.QueryRow(ctx, query, id)
 	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.PubTime, &post.Link)
@@ -192,5 +192,5 @@ func (s *Store) GetNewsByID(id int) (*Post, error) {
 		return nil, err
 	}
 
-	return post, nil
+	return &post, nil
 }

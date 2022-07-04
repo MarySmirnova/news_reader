@@ -41,10 +41,10 @@ func New(cfg config.API, db storage) *API {
 	}
 
 	handler := mux.NewRouter()
-	handler.Use(a.reqIDMiddleware)
+	handler.Use(a.reqIDMiddleware, a.logMiddleware)
 	handler.Name("get_some_last_news").Path("/news/{n}").Methods(http.MethodGet).HandlerFunc(a.SomePostsHandler)
 	handler.Name("get_all_news").Path("/news").Methods(http.MethodGet).HandlerFunc(a.AllPostsHandler)
-	handler.Name("get_news_by_id").Path("/news/full/{id:[0-9]+}").Methods(http.MethodGet).HandlerFunc(a.PostHandler)
+	handler.Name("get_news_by_id").Path("/news/full/{id}").Methods(http.MethodGet).HandlerFunc(a.PostHandler)
 
 	handler.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./webapp"))))
 
@@ -94,14 +94,13 @@ func (a *API) logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			log.WithFields(log.Fields{
-				"time":       time.Now().String(),
-				"request_ip": strings.Split(r.RemoteAddr, ":")[0],
-				"code":       w.Header().Get(),
-				"request_id": r.Context().Value(ContextReqIDKey),
+				"request_time": time.Now().Format("2006-01-02 15:04:05.000000"),
+				"request_ip":   strings.TrimPrefix(strings.Split(r.RemoteAddr, ":")[1], "["),
+				"code":         w.Header().Get("Code"),
+				"request_id":   r.Context().Value(ContextReqIDKey),
 			}).Info("news reader response")
 		}()
 
-		// TODO: записать в ответ ид запроса!
 		next.ServeHTTP(w, r)
 	})
 }
@@ -133,6 +132,7 @@ func (a *API) getPageAndFilterParams(w http.ResponseWriter, r *http.Request) (in
 }
 
 func (a *API) writeResponseError(w http.ResponseWriter, err error, code int) {
+	w.Header().Add("Code", strconv.Itoa(code))
 	log.WithError(err).Error("api error")
 	w.WriteHeader(code)
 	_, _ = w.Write([]byte(err.Error()))
